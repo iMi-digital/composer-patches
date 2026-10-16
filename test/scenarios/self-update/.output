@@ -1,0 +1,18 @@
+Processing patches configuration
+  - Installing vaimo/composer-patches-target1 (1.0.0): Mirroring from modules/composer-patches-target1
+  - Applying patches for vaimo/composer-patches-target1 (1)
+    ~ {{PATCHES-OWNER}}: patches/single-package-single-file-no-version.patch [NEW]
+      Change: value8 => valueC
+
+Writing patch info to install file
+Package operations: 0 installs, 2 updates, 0 removals
+  - Upgrading vaimo/composer-patches-local
+  - Upgrading vaimo/composer-patches-target1 (0.0.0 => 1.0.0): Mirroring from modules/composer-patches-target1
+Patcher was updated in this run, applying patches in a fresh process
+Processing patches configuration
+  - Installing vaimo/composer-patches-target1 (1.0.0): Mirroring from modules/composer-patches-target1
+  - Applying patches for vaimo/composer-patches-target1 (1)
+    ~ {{PATCHES-OWNER}}: patches/single-package-single-file-no-version.patch [NEW]
+      Change: value8 => valueC
+
+Writing patch info to install file

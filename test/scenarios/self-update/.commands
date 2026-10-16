@@ -1,0 +1,6 @@
+patch:apply
+
+@queue_update vaimo/composer-patches-local
+@queue_update vaimo/composer-patches-target1
+
+update

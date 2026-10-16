@@ -45,8 +45,21 @@ class Plugin implements
      */
     private $capabilitiesConfig = array();
 
+    /**
+     * @var \Composer\IO\IOInterface|null
+     */
+    private $deferredIO;
+
     public function activate(\Composer\Composer $composer, \Composer\IO\IOInterface $appIO)
     {
+        // Composer loads an updated plugin within the running process under a renamed main class, while all
+        // other plugin classes stay at the version loaded before. Touch none of them, patch in a fresh process.
+        if (static::class !== 'Vaimo\\ComposerPatches\\Plugin') {
+            $this->deferredIO = $appIO;
+
+            return;
+        }
+
         $contextFactory = new \Vaimo\ComposerPatches\Factories\ComposerContextFactory($composer);
         $composerContext = $contextFactory->create();
 
@@ -88,6 +101,12 @@ class Plugin implements
 
     public function postInstall(\Composer\Script\Event $event)
     {
+        if ($this->deferredIO) {
+            $this->applyPatchesInFreshProcess($event->isDevMode());
+
+            return;
+        }
+
         if (!$this->bootstrap) {
             $this->lockSanitizer->sanitize();
 
@@ -125,8 +144,27 @@ class Plugin implements
         throw new ScriptExecutionException('Execution halted due to composer-patch failure', 1);
     }
 
+    private function applyPatchesInFreshProcess($isDevMode)
+    {
+        $this->deferredIO->write('<info>Patcher was updated in this run, applying patches in a fresh process</info>');
+
+        $command = array(PHP_BINARY, getenv('COMPOSER_BINARY'), 'patch:apply');
+        if (!$isDevMode) {
+            $command[] = '--no-dev';
+        }
+
+        $process = new \Composer\Util\ProcessExecutor($this->deferredIO);
+        if ($process->execute(implode(' ', array_map('Composer\Util\ProcessExecutor::escape', $command))) !== 0) {
+            throw new ScriptExecutionException('Execution halted due to composer-patch failure', 1);
+        }
+    }
+
     public function resetPackages(\Composer\Installer\PackageEvent $event)
     {
+        if ($this->deferredIO) {
+            return;
+        }
+
         if (!$this->operationAnalyser->isPatcherUninstallOperation($event->getOperation())) {
             return;
         }
